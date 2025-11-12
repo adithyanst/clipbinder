@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  createdAt    DateTime @default(now())
+  passwordHash String
+  clips        Clips[]
+}
+
+model Clips {
+  id        String   @id @default(cuid())
+  data      String
+  type      ClipType
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  users     Users    @relation(fields: [usersId], references: [id], onDelete: Cascade)
+  usersId   String
+}
+
+enum ClipType {
+  plaintext
+  image
+  url
+}
