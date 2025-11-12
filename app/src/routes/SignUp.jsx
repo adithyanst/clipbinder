@@ -8,7 +8,7 @@ function SignUp() {
   async function submitHandler(e) {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:3000/api/auth/signup", {
+    const response = await fetch("https://sleepy-rosabelle-adithya-6177578c.koyeb.app/api/auth/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -16,7 +16,9 @@ function SignUp() {
       body: JSON.stringify({ email, name, password }),
     });
 
-    console.log(response);
+    const jwtData = await response.json();
+    console.log(jwtData.jwt);
+    localStorage.setItem("jwt", jwtData.jwt);
   }
 
   return (

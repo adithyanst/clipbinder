@@ -12,27 +12,51 @@ console.log(JWT_SECRET);
 
 const prisma = new PrismaClient();
 
-router.get("/signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
   const body = req.body;
+
+  const hash = await bcrypt.hash(body.password, 10);
 
   const user = await prisma.users.create({
     data: {
       name: body.name,
       email: body.email,
-      passwordHash: body.password,
+      passwordHash: hash,
     },
   });
 
+  // const result = await bcrypt.compare(body.password, hash);
+
   console.log(user);
 
-  const token = jwt.sign({ userId: 123, email: "test@gmail.com" }, JWT_SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
   console.log(token);
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    console.log(user);
+  // jwt.verify(token, JWT_SECRET, (err, user) => {
+  //   console.log(user);
+  // });
+
+  res.json({ jwt: token });
+});
+
+router.post("/login", async (req, res) => {
+  const body = req.body;
+
+  const user = await prisma.users.findUnique({
+    where: { email: body.email },
   });
 
-  res.end();
+  if (!user) {
+    return res.status(401).json({ error: "invalid credentials" });
+  }
+
+  const valid = await bcrypt.compare(body.password, user.passwordHash);
+  if (!valid) {
+    return res.status(401).json({ error: "invalid credentials" });
+  }
+
+  const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+  res.json({ jwt: token });
 });
 
 export default router;
