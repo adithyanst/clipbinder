@@ -5,10 +5,18 @@ function SignUp() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
-  function submitHandler(e) {
+  async function submitHandler(e) {
     e.preventDefault();
 
-    console.log({ email, name, password });
+    const response = await fetch("http://localhost:3000/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, name, password }),
+    });
+
+    console.log(response);
   }
 
   return (

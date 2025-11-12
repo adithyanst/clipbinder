@@ -12,8 +12,19 @@ console.log(JWT_SECRET);
 
 const prisma = new PrismaClient();
 
-router.get("/signup", (req, res) => {
-  console.log("o");
+router.get("/signup", async (req, res) => {
+  const body = req.body;
+
+  const user = await prisma.users.create({
+    data: {
+      name: body.name,
+      email: body.email,
+      passwordHash: body.password,
+    },
+  });
+
+  console.log(user);
+
   const token = jwt.sign({ userId: 123, email: "test@gmail.com" }, JWT_SECRET, { expiresIn: "7d" });
   console.log(token);
 
