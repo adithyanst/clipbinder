@@ -5,9 +5,9 @@ const app = express();
 
 app.use(express.json());
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 app.get("/api/auth/signup", (req, res) => {
-  console.log(yo)
-  res.end()
-})
+  console.log(yo);
+  res.end();
+});
