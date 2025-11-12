@@ -1,43 +1,53 @@
 import { useState, useEffect } from "react";
-import reactLogo from "./assets/react.svg";
+
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import clipbinderLogo from "./assets/clipbinder.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
   useEffect(() => {
-    let isRegistered = false;
-
-    async function registerGlobalShortcutSecurely() {
-      if (isRegistered) return;
+    async function setupAppFunctions() {
+      getCurrentWindow().setSimpleFullscreen(true);
 
       await unregisterAll();
-      await register("CommandOrControl+Shift+V", (e) => {
+      await register("CommandOrControl+Shift+V", async (e) => {
         if (e.state === "Released") {
           return;
         }
         console.log("Shortcut triggered");
+
+        const focused = await getCurrentWindow().isFocused();
+
+        if (focused) {
+          getCurrentWindow().hide();
+        } else {
+          getCurrentWindow().show();
+          getCurrentWindow().setFocus();
+        }
       });
-      isRegistered = true;
     }
 
-    registerGlobalShortcutSecurely();
+    setupAppFunctions();
 
     return () => {
-      isRegistered = false;
       unregisterAll();
     };
   }, []);
 
-  async function greet() {
-    setGreetMsg(await invoke("greet", { name }));
-  }
-
-  return <div className="bg-black">damn son</div>;
+  return (
+    <main className="flex h-screen w-screen items-center justify-center">
+      <div className="flex items-center justify-center rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] px-12 py-6 text-white">
+        <div className="flex gap-2">
+          <span className="opacity-50">welcome to</span> <img src={clipbinderLogo} alt="logotype for clipbinder" />{" "}
+          <span className="opacity-50">would you like to</span> <a href="/login">login</a>{" "}
+          <span className="opacity-50">or</span> <a href="/signup">signup</a>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 export default App;
