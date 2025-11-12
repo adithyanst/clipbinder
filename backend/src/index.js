@@ -1,13 +1,12 @@
-import { PrismaClient } from "@prisma/client";
 import express from "express";
+import authHandler from "./auth/authHandler.js";
 
 const app = express();
 
 app.use(express.json());
 
-const prisma = new PrismaClient();
+app.use("/api/auth", authHandler);
 
-app.get("/api/auth/signup", (req, res) => {
-  console.log(yo);
-  res.end();
+app.listen(3000, () => {
+  console.log("server started on 3000");
 });
