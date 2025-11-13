@@ -9,7 +9,7 @@ function Login() {
   async function submitHandler(e) {
     e.preventDefault();
 
-    const response = await fetch("https://sleepy-rosabelle-adithya-6177578c.koyeb.app/api/auth/login", {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

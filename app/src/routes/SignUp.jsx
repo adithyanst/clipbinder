@@ -8,7 +8,7 @@ function SignUp() {
   async function submitHandler(e) {
     e.preventDefault();
 
-    const response = await fetch("https://sleepy-rosabelle-adithya-6177578c.koyeb.app/api/auth/signup", {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
