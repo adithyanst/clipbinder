@@ -9,6 +9,8 @@ import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 
 import { BrowserRouter, Routes, Route } from "react-router";
 
+import { onClipboardUpdate, onTextUpdate, startListening, onImageUpdate } from "tauri-plugin-clipboard-api";
+
 function Layout() {
   useEffect(() => {
     async function setupAppFunctions() {
@@ -37,6 +39,33 @@ function Layout() {
 
     return () => {
       unregisterAll();
+    };
+  }, []);
+
+  // clipboard listener
+  useEffect(() => {
+    let stopListening;
+
+    console.log("test");
+
+    (async () => {
+      stopListening = await startListening();
+
+      await onClipboardUpdate(() => {
+        console.log("Clipboard changed!");
+      });
+
+      await onTextUpdate((text) => {
+        console.log("Copied text:", text);
+      });
+
+      await onImageUpdate((image) => {
+        console.log("Base64 Image:", image);
+      });
+    })();
+
+    return () => {
+      if (stopListening) stopListening();
     };
   }, []);
 
