@@ -1,9 +1,7 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 import clipbinderLogo from "./assets/clipbinder.svg";
 import "./App.css";
+import { useNavigate } from "react-router-dom";
 
 function App() {
   const navigate = useNavigate();
@@ -15,32 +13,6 @@ function App() {
       navigate("/dash");
       return;
     }
-
-    async function setupAppFunctions() {
-      await getCurrentWindow().setSimpleFullscreen(true);
-
-      await unregisterAll();
-      await register("CommandOrControl+Shift+V", async (e) => {
-        if (e.state === "Released") return;
-
-        console.log("Shortcut triggered");
-
-        const focused = await getCurrentWindow().isFocused();
-
-        if (focused) {
-          getCurrentWindow().hide();
-        } else {
-          getCurrentWindow().show();
-          getCurrentWindow().setFocus();
-        }
-      });
-    }
-
-    setupAppFunctions();
-
-    return () => {
-      unregisterAll();
-    };
   }, [navigate]);
 
   return (
