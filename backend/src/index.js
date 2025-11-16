@@ -1,5 +1,6 @@
 import express from "express";
 import authHandler from "./auth/authHandler.js";
+import clipsHandler from "./clips/clipsHandler.js";
 import dotenv from "dotenv";
 
 import cors from "cors";
@@ -16,6 +17,7 @@ app.use(
 );
 
 app.use("/api/auth", authHandler);
+app.use("/api/clips", clipsHandler);
 
 app.listen(3000, () => {
   console.log("server started on 3000");

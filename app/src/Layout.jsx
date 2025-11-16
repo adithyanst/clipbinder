@@ -55,8 +55,21 @@ function Layout() {
         console.log("Clipboard changed!");
       });
 
-      await onTextUpdate((text) => {
+      await onTextUpdate(async (text) => {
         console.log("Copied text:", text);
+
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/clips/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          },
+          body: JSON.stringify({ data: text, type: "plaintext" }),
+        });
+
+        const responseData = await response.json();
+
+        console.log(responseData);
       });
 
       await onImageUpdate((image) => {
