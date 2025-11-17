@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function SignUp() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   async function submitHandler(e) {
     e.preventDefault();
@@ -19,6 +21,7 @@ function SignUp() {
     const jwtData = await response.json();
     console.log(jwtData.jwt);
     localStorage.setItem("jwt", jwtData.jwt);
+    navigate("/dash");
   }
 
   return (
