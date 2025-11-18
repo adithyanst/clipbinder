@@ -14,8 +14,6 @@ import { onClipboardUpdate, onTextUpdate, startListening, onImageUpdate } from "
 function Layout() {
   useEffect(() => {
     async function setupAppFunctions() {
-      await getCurrentWindow().setSimpleFullscreen(true);
-
       await unregisterAll();
       await register("CommandOrControl+Shift+V", async (e) => {
         if (e.state === "Released") return;
@@ -83,14 +81,21 @@ function Layout() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dash" element={<Dash />} />
-      </Routes>
-    </BrowserRouter>
+    <main className="flex items-center justify-center">
+      <div
+        className="flex items-center justify-center rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] px-12 py-6 text-white"
+        data-tauri-drag-region
+      >
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dash" element={<Dash />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </main>
   );
 }
 
