@@ -19,7 +19,8 @@
         "decorations": false,
         "transparent": true,
         "shadow": false,
-        "visibleOnAllWorkspaces": true
+        "visibleOnAllWorkspaces": true,
+        "resizable": false
       }
     ],
     "security": {

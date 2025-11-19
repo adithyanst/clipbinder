@@ -19,6 +19,7 @@
     "clipboard:allow-has-files",
     "clipboard:read-all",
     "core:window:default",
-    "core:window:allow-start-dragging"
+    "core:window:allow-start-dragging",
+    "core:window:allow-set-size"
   ]
 }

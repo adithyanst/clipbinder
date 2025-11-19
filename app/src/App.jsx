@@ -16,7 +16,7 @@ function App() {
   }, [navigate]);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex w-max gap-2">
       <span className="opacity-50">welcome to</span>
       <img src={clipbinderLogo} alt="logotype for clipbinder" />
       <span className="opacity-50">would you like to</span>

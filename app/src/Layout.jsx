@@ -3,15 +3,18 @@ import SignUp from "./routes/SignUp";
 import Login from "./routes/Login";
 import Dash from "./routes/Dash";
 
-import { useEffect } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useEffect, useRef } from "react";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 
-import { BrowserRouter, Routes, Route } from "react-router";
+import { Routes, Route, useLocation } from "react-router";
 
 import { onClipboardUpdate, onTextUpdate, startListening, onImageUpdate } from "tauri-plugin-clipboard-api";
 
 function Layout() {
+  const main = useRef(null);
+  const location = useLocation();
+
   useEffect(() => {
     async function setupAppFunctions() {
       await unregisterAll();
@@ -80,20 +83,31 @@ function Layout() {
     };
   }, []);
 
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (main.current) {
+        const width = main.current.offsetWidth;
+        const height = main.current.offsetHeight;
+
+        getCurrentWindow().setSize(new LogicalSize(width, height));
+        console.log("Resized to", width, height);
+      }
+    });
+  }, []);
+
   return (
-    <main className="flex items-center justify-center">
+    <main className="flex h-max w-max items-center justify-center">
       <div
         className="flex items-center justify-center rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] px-12 py-6 text-white"
         data-tauri-drag-region
+        ref={main}
       >
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dash" element={<Dash />} />
-          </Routes>
-        </BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dash" element={<Dash />} />
+        </Routes>
       </div>
     </main>
   );
