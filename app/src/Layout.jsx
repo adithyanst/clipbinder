@@ -85,6 +85,7 @@ function Layout() {
 
   useEffect(() => {
     requestAnimationFrame(() => {
+      console.log(`location changed to ${location}; refreshing resize`);
       if (main.current) {
         const width = main.current.offsetWidth;
         const height = main.current.offsetHeight;
@@ -93,7 +94,7 @@ function Layout() {
         console.log("Resized to", width, height);
       }
     });
-  }, []);
+  }, [location]);
 
   return (
     <main className="flex h-max w-max items-center justify-center">
