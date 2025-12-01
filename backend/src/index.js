@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import authRouter from "./routes/auth.route.js";
-import clipsRouter from "./routes/auth.route.js";
+import clipsRouter from "./routes/clips.route.js";
 
 dotenv.config();
 const app = express();
