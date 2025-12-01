@@ -59,7 +59,7 @@ function Layout() {
       await onTextUpdate(async (text) => {
         console.log("Copied text:", text);
 
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/clips/add`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clips/add`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
