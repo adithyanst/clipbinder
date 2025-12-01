@@ -12,10 +12,6 @@ console.log(JWT_SECRET);
 
 const prisma = new PrismaClient();
 
-function readAuth(req, res, next) {
-  const role = req.headers.authorization.role;
-}
-
 router.post("/signup", async (req, res) => {
   const body = req.body;
 
