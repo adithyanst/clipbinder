@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useNavigate } from "react-router-dom";
 import LoadingContext from "../contexts/loadingContext";
 import { writeText } from "tauri-plugin-clipboard-api";
@@ -92,6 +93,9 @@ function Dash() {
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.metaKey && e.key === "Enter") {
         writeText(clips[selectedIndex].data);
+
+        getCurrentWindow().minimize();
+        console.log("window hidden");
       }
     }
     window.addEventListener("keydown", onKey);

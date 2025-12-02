@@ -26,9 +26,10 @@ function Layout() {
         const focused = await getCurrentWindow().isFocused();
 
         if (focused) {
-          getCurrentWindow().hide();
+          getCurrentWindow().minimize();
           console.log("window hidden");
         } else {
+          getCurrentWindow().unminimize();
           getCurrentWindow().show();
           getCurrentWindow().setFocus();
           console.log("window shown and focused");
