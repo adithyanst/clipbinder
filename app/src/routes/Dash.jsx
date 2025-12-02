@@ -34,15 +34,18 @@ function Dash() {
       });
   }, [page]);
 
-  return (
-    <div className="flex flex-col items-center justify-center text-white">
-      dashboard
-      <button onClick={handleLogout} type="button">
-        log out
-      </button>
-      {clips.map((x) => (
-        <div key={x.id}>{x.id}</div>
-      ))}
+  return loadingContext.loading ? (
+    <div className="flex w-200 flex-col items-center justify-center text-white">loading</div>
+  ) : (
+    <div className="flex w-200 items-center justify-center text-white">
+      <div className="w-[30%]">
+        {clips.map((x) => (
+          <div key={x.id}>
+            <p>{`${x.data.slice(0, 20)}...`}</p>
+          </div>
+        ))}
+      </div>
+      <div className="w-[70%]">right side</div>
     </div>
   );
 }

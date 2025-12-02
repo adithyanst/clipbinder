@@ -85,7 +85,7 @@ function Layout() {
 
   useEffect(() => {
     requestAnimationFrame(() => {
-      console.log(`location changed to ${location}; refreshing resize`);
+      console.log(`location changed to ${location.pathname}; refreshing resize`);
       console.log(`loading changed to ${loading}; refreshing resize`);
       if (main.current) {
         const width = main.current.offsetWidth;
@@ -101,7 +101,7 @@ function Layout() {
     <LoadingContext.Provider value={{ loading, setLoading }}>
       <main className="flex h-max w-max items-center justify-center">
         <div
-          className="flex items-center justify-center rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] px-12 py-6 text-white"
+          className="flex items-center justify-center rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] px-8 py-5 text-white"
           data-tauri-drag-region
           ref={main}
         >
