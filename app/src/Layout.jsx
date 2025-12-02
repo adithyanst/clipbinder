@@ -91,7 +91,7 @@ function Layout() {
         const width = main.current.offsetWidth;
         const height = main.current.offsetHeight;
 
-        getCurrentWindow().setSize(new LogicalSize(width, height));
+        getCurrentWindow().setSize(new LogicalSize(width + 10, height + 10));
         console.log("Resized to", width, height);
       }
     });

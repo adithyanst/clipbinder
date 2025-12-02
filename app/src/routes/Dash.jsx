@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingContext from "../contexts/loadingContext";
+import { writeText } from "tauri-plugin-clipboard-api";
 
 function Dash() {
   const navigate = useNavigate();
@@ -90,12 +91,12 @@ function Dash() {
       } else if (e.metaKey && e.key === "k") {
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.metaKey && e.key === "Enter") {
-        console.log("test");
+        writeText(clips[selectedIndex].data);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [clips, loadingMore]);
+  }, [clips, loadingMore, selectedIndex]);
 
   // scroll left sidebar so selected item is visible
   useEffect(() => {
@@ -108,10 +109,10 @@ function Dash() {
       const approxTop = selectedIndex * 40; // if item height ~40px; optional fallback
       container.scrollTop = approxTop - container.clientHeight / 2;
     }
-  }, [selectedIndex, clips]);
+  }, [selectedIndex]);
 
   return loadingContext.loading ? (
-    <div className="flex w-200 flex-col items-center justify-center text-white">loading</div>
+    <div className="flex flex-col items-center justify-center px-8 py-5 text-white">loading</div>
   ) : (
     <div className="flex h-80 w-200 items-center justify-center overflow-hidden text-white">
       <div ref={listRef} className="flex h-full w-[30%] flex-col overflow-y-auto">

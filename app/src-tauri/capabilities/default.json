@@ -18,6 +18,8 @@
     "clipboard:monitor-all",
     "clipboard:allow-has-files",
     "clipboard:read-all",
+    "clipboard:allow-write-text",
+    "clipboard:write-all",
     "core:window:default",
     "core:window:allow-start-dragging",
     "core:window:allow-set-size"
