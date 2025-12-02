@@ -101,7 +101,7 @@ function Layout() {
     <LoadingContext.Provider value={{ loading, setLoading }}>
       <main className="flex h-max w-max items-center justify-center">
         <div
-          className="flex items-center justify-center rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] px-8 py-5 text-white"
+          className="flex items-center justify-center overflow-hidden rounded-[12px] border-[#515151] border-[1.5px] border-solid bg-[#1B1B1B] text-white"
           data-tauri-drag-region
           ref={main}
         >

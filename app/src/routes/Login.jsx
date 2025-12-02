@@ -23,25 +23,27 @@ function Login() {
   }
 
   return (
-    <form onSubmit={submitHandler}>
-      <input
-        placeholder="email"
-        onChange={(e) => {
-          setEmail(e.target.value);
-        }}
-        type="email"
-        required
-      />
-      <input
-        placeholder="password"
-        onChange={(e) => {
-          setPassword(e.target.value);
-        }}
-        type="password"
-        required
-      />
-      <button type="submit">login</button>
-    </form>
+    <div className="px-8 py-5">
+      <form onSubmit={submitHandler}>
+        <input
+          placeholder="email"
+          onChange={(e) => {
+            setEmail(e.target.value);
+          }}
+          type="email"
+          required
+        />
+        <input
+          placeholder="password"
+          onChange={(e) => {
+            setPassword(e.target.value);
+          }}
+          type="password"
+          required
+        />
+        <button type="submit">login</button>
+      </form>
+    </div>
   );
 }
 

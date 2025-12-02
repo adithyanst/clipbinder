@@ -25,33 +25,35 @@ function SignUp() {
   }
 
   return (
-    <form onSubmit={submitHandler}>
-      <input
-        placeholder="name"
-        onChange={(e) => {
-          setName(e.target.value);
-        }}
-        type="text"
-        required
-      />
-      <input
-        placeholder="email"
-        onChange={(e) => {
-          setEmail(e.target.value);
-        }}
-        type="email"
-        required
-      />
-      <input
-        placeholder="password"
-        onChange={(e) => {
-          setPassword(e.target.value);
-        }}
-        type="password"
-        required
-      />
-      <button type="submit">signup</button>
-    </form>
+    <div className="px-8 py-5">
+      <form onSubmit={submitHandler}>
+        <input
+          placeholder="name"
+          onChange={(e) => {
+            setName(e.target.value);
+          }}
+          type="text"
+          required
+        />
+        <input
+          placeholder="email"
+          onChange={(e) => {
+            setEmail(e.target.value);
+          }}
+          type="email"
+          required
+        />
+        <input
+          placeholder="password"
+          onChange={(e) => {
+            setPassword(e.target.value);
+          }}
+          type="password"
+          required
+        />
+        <button type="submit">signup</button>
+      </form>
+    </div>
   );
 }
 
