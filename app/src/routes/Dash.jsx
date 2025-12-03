@@ -94,7 +94,7 @@ function Dash() {
       } else if (e.metaKey && e.key === "Enter") {
         writeText(clips[selectedIndex].data);
 
-        getCurrentWindow().minimize();
+        getCurrentWindow().hide();
         console.log("window hidden");
       }
     }
@@ -118,31 +118,39 @@ function Dash() {
   return loadingContext.loading ? (
     <div className="flex flex-col items-center justify-center px-8 py-5 text-white">loading</div>
   ) : (
-    <div className="flex h-80 w-200 items-center justify-center overflow-hidden text-white">
-      <div ref={listRef} className="flex h-full w-[30%] flex-col overflow-y-auto">
-        {clips.map((x, i) => (
-          <button
-            key={x.id}
-            ref={(el) => {
-              itemsRef.current[i] = el;
-            }}
-            className={`cursor-pointer border-[#515151] border-b-[1.5px] border-solid p-2 ${i === selectedIndex ? "bg-[#282828]" : ""}`}
-            onClick={() => setSelectedIndex(i)}
-            type="button"
-          >
-            <p>{`${x.data.slice(0, 20)}...`}</p>
-          </button>
-        ))}
+    <div className="w-200 overflow-hidden">
+      <div className="px-4 py-3">
+        <input placeholder="search" />
       </div>
-      <div className="h-full w-[70%] select-none overflow-y-auto p-4" data-tauri-drag-region>
-        {selectedIndex >= 0 && clips[selectedIndex] ? (
-          <div>
-            <p className="mt-2 whitespace-pre-wrap">{clips[selectedIndex].data}</p>
-            <p className="mt-4 text-sm">id: {clips[selectedIndex].id}</p>
-          </div>
-        ) : (
-          <div>no clip selected</div>
-        )}
+      <div className="flex h-80">
+        <div
+          ref={listRef}
+          className="flex h-full w-[30%] flex-col overflow-y-auto border-[#515151] border-r-[1.5px] border-solid"
+        >
+          {clips.map((x, i) => (
+            <button
+              key={x.id}
+              ref={(el) => {
+                itemsRef.current[i] = el;
+              }}
+              className={`cursor-pointer border-[#515151] border-b-[1.5px] border-solid p-2 ${i === selectedIndex ? "bg-[#282828]" : ""}`}
+              onClick={() => setSelectedIndex(i)}
+              type="button"
+            >
+              <p>{`${x.data.slice(0, 20)}...`}</p>
+            </button>
+          ))}
+        </div>
+        <div className="h-full w-[70%] select-none overflow-y-auto p-4" data-tauri-drag-region>
+          {selectedIndex >= 0 && clips[selectedIndex] ? (
+            <div>
+              <p className="mt-2 whitespace-pre-wrap">{clips[selectedIndex].data}</p>
+              <p className="mt-4 text-sm">id: {clips[selectedIndex].id}</p>
+            </div>
+          ) : (
+            <div>no clip selected</div>
+          )}
+        </div>
       </div>
     </div>
   );
