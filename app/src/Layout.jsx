@@ -29,8 +29,11 @@ function Layout() {
           getCurrentWindow().hide();
           console.log("window hidden");
         } else {
-          getCurrentWindow().show();
-          getCurrentWindow().setFocus();
+          getCurrentWindow()
+            .show()
+            .then(() => {
+              getCurrentWindow().setFocus();
+            });
           console.log("window shown and focused");
         }
       });
