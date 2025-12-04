@@ -1,15 +1,18 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useNavigate } from "react-router-dom";
 import { LoadingContext } from "../contexts/loadingContext";
 import { ClipsContext } from "../contexts/clipsContext";
-import { writeText } from "tauri-plugin-clipboard-api";
+import { useKeyboardNavigation, useScrollToSelected } from "../hooks/useKeyboardNavigation";
+import { getClips } from "../services/dashboard.service.js";
+import { logout } from "../services/auth.service.js";
+import { PAGINATION } from "../constants.js";
 
 function Dash() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
   const noMoreRef = useRef(false);
 
   const loadingContext = useContext(LoadingContext);
@@ -19,106 +22,67 @@ function Dash() {
   const itemsRef = useRef([]);
 
   function handleLogout() {
-    localStorage.removeItem("jwt");
+    logout();
     navigate("/");
   }
 
   // initial load
   useEffect(() => {
     loadingContext.setLoading(true);
+    setError("");
 
-    const token = localStorage.getItem("jwt");
-
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/dashboard/get?limit=10&page=0`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((jsonRes) => {
-        clipsContext.setClips(jsonRes);
+    (async () => {
+      try {
+        const data = await getClips(PAGINATION.LIMIT, 0);
+        clipsContext.setClips(data);
+      } catch (err) {
+        setError(err.message || "Failed to load clips");
+        console.error("Failed to fetch initial clips:", err);
+      } finally {
         loadingContext.setLoading(false);
-      })
-      .catch(() => {
-        loadingContext.setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   // load on page change
   useEffect(() => {
-    const token = localStorage.getItem("jwt");
-
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/dashboard/get?limit=10&page=${page}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((jsonRes) => {
+    (async () => {
+      try {
+        const data = await getClips(PAGINATION.LIMIT, page);
         if (page === 0) {
-          clipsContext.setClips(jsonRes);
-          console.log(clipsContext.clips);
-          setSelectedIndex(jsonRes.length > 0 ? 0 : -1);
+          clipsContext.setClips(data);
+          setSelectedIndex(data.length > 0 ? 0 : -1);
         } else {
-          clipsContext.setClips((prev) => [...prev, ...jsonRes]);
+          clipsContext.setClips((prev) => [...prev, ...data]);
         }
+        setError("");
+      } catch (err) {
+        setError(err.message || "Failed to load more clips");
+        console.error("Failed to fetch clips:", err);
+      } finally {
         setLoadingMore(false);
-      })
-      .catch(() => {
-        setLoadingMore(false);
-      });
+      }
+    })();
   }, [page]);
 
-  // keyboard navigation
-  useEffect(() => {
-    function onKey(e) {
-      if (clipsContext.clips.length === 0) return;
-      if (e.metaKey && e.key === "j") {
-        setSelectedIndex((prev) => {
-          const next = Math.min(prev + 1, clipsContext.clips.length - 1);
-          if (next === clipsContext.clips.length - 2 && !loadingMore && !noMoreRef.current) {
-            setLoadingMore(true);
-            setPage((p) => p + 1);
-          }
-          return next;
-        });
-      } else if (e.metaKey && e.key === "k") {
-        setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      } else if (e.metaKey && e.key === "Enter") {
-        writeText(clipsContext.clips[selectedIndex].data);
+  useKeyboardNavigation(selectedIndex, setSelectedIndex, clipsContext, loadingMore, setLoadingMore, setPage);
+  useScrollToSelected(selectedIndex, itemsRef, listRef);
 
-        getCurrentWindow().hide();
-        console.log("window hidden");
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [clipsContext.clips, loadingMore, selectedIndex]);
+  if (loadingContext.loading) {
+    return (
+      <div className="flex flex-col items-center justify-center px-8 py-5 text-white">
+        <p>loading clips...</p>
+        {error && <p className="opacity-50 mt-2 text-sm">{error}</p>}
+      </div>
+    );
+  }
 
-  // scroll left sidebar so selected item is visible
-  useEffect(() => {
-    if (selectedIndex == null || selectedIndex < 0) return;
-    const el = itemsRef.current[selectedIndex];
-    if (el) {
-      el.scrollIntoView({ block: "nearest", behavior: "smooth", inline: "nearest" });
-    } else if (listRef.current) {
-      const container = listRef.current;
-      const approxTop = selectedIndex * 40; // if item height ~40px; optional fallback
-      container.scrollTop = approxTop - container.clientHeight / 2;
-    }
-  }, [selectedIndex]);
-
-  return loadingContext.loading ? (
-    <div className="flex flex-col items-center justify-center px-8 py-5 text-white">loading</div>
-  ) : (
+  return (
     <div className="w-200 overflow-hidden">
       <div className="px-4 py-3">
         <input placeholder="search" />
       </div>
+      {error && <div className="px-4 py-2 opacity-50 text-sm">{error}</div>}
       <div className="flex h-80">
         <div
           ref={listRef}
@@ -137,15 +101,24 @@ function Dash() {
               {x.type === "plaintext" ? <p>{`${x.data.slice(0, 20)}...`}</p> : <img src={x.data} />}
             </button>
           ))}
+          {loadingMore && <div className="p-2 opacity-50 text-sm text-center">loading more...</div>}
         </div>
         <div className="h-full w-[70%] select-none overflow-y-auto p-4" data-tauri-drag-region>
           {selectedIndex >= 0 && clipsContext.clips[selectedIndex] ? (
             <div>
               <p className="mt-2 whitespace-pre-wrap">{clipsContext.clips[selectedIndex].data}</p>
               <p className="mt-4 text-sm">id: {clipsContext.clips[selectedIndex].id}</p>
+              <button onClick={handleLogout} className="mt-4 px-4 py-2 text-white">
+                Logout
+              </button>
             </div>
           ) : (
-            <div>no clip selected</div>
+            <div>
+              no clip selected
+              <button onClick={handleLogout} className="mt-4 px-4 py-2 text-white">
+                Logout
+              </button>
+            </div>
           )}
         </div>
       </div>

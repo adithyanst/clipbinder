@@ -1,25 +1,28 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../services/auth.service.js";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function submitHandler(e) {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const jwtData = await response.json();
-    localStorage.setItem("jwt", jwtData.jwt);
-    navigate("/dash");
+    try {
+      await login(email, password);
+      navigate("/dash");
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -32,6 +35,7 @@ function Login() {
           }}
           type="email"
           required
+          disabled={loading}
         />
         <input
           placeholder="password"
@@ -40,8 +44,12 @@ function Login() {
           }}
           type="password"
           required
+          disabled={loading}
         />
-        <button type="submit">login</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "logging in..." : "login"}
+        </button>
+        {error && <p className="opacity-50 mt-2">{error}</p>}
       </form>
     </div>
   );

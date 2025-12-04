@@ -1,27 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { signup } from "../services/auth.service.js";
 
 function SignUp() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function submitHandler(e) {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, name, password }),
-    });
-
-    const jwtData = await response.json();
-    console.log(jwtData.jwt);
-    localStorage.setItem("jwt", jwtData.jwt);
-    navigate("/dash");
+    try {
+      await signup(name, email, password);
+      navigate("/dash");
+    } catch (err) {
+      setError(err.message || "Sign up failed. Please try again.");
+      console.error("Sign up error:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -34,6 +36,7 @@ function SignUp() {
           }}
           type="text"
           required
+          disabled={loading}
         />
         <input
           placeholder="email"
@@ -42,6 +45,7 @@ function SignUp() {
           }}
           type="email"
           required
+          disabled={loading}
         />
         <input
           placeholder="password"
@@ -50,8 +54,12 @@ function SignUp() {
           }}
           type="password"
           required
+          disabled={loading}
         />
-        <button type="submit">signup</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "signing up..." : "signup"}
+        </button>
+        {error && <p className="opacity-50 mt-2">{error}</p>}
       </form>
     </div>
   );
