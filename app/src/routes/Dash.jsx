@@ -134,7 +134,7 @@ function Dash() {
               onClick={() => setSelectedIndex(i)}
               type="button"
             >
-              <p>{`${x.data.slice(0, 20)}...`}</p>
+              {x.type === "plaintext" ? <p>{`${x.data.slice(0, 20)}...`}</p> : <img src={x.data} />}
             </button>
           ))}
         </div>
