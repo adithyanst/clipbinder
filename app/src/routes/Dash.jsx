@@ -29,7 +29,7 @@ function Dash() {
 
     const token = localStorage.getItem("jwt");
 
-    fetch(`${import.meta.env.VITE_BACKEND_URL}/dashboard/get?limit=10&page=${page}`, {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/dashboard/get?limit=10&page=0`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -38,12 +38,7 @@ function Dash() {
     })
       .then((res) => res.json())
       .then((jsonRes) => {
-        if (page === 0) {
-          clipsContext.setClips(jsonRes);
-          setSelectedIndex(0);
-        } else {
-          clipsContext.setClips((prev) => [...prev, ...jsonRes]);
-        }
+        clipsContext.setClips(jsonRes);
         loadingContext.setLoading(false);
       })
       .catch(() => {

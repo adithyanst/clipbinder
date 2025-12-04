@@ -5,6 +5,7 @@ import { Route, Routes, useLocation } from "react-router";
 import { onClipboardUpdate, onImageUpdate, onTextUpdate, startListening } from "tauri-plugin-clipboard-api";
 import App from "./App";
 import { LoadingContext } from "./contexts/loadingContext";
+import { ClipsContext } from "./contexts/clipsContext";
 import Dash from "./routes/Dash";
 import Login from "./routes/Login";
 import SignUp from "./routes/SignUp";
@@ -14,6 +15,7 @@ function Layout() {
   const location = useLocation();
 
   const loadingContext = useContext(LoadingContext);
+  const clipsContext = useContext(ClipsContext);
 
   useEffect(() => {
     async function setupAppFunctions() {
@@ -29,12 +31,31 @@ function Layout() {
           getCurrentWindow().hide();
           console.log("window hidden");
         } else {
+          loadingContext.setLoading(true);
+
+          const token = localStorage.getItem("jwt");
+
+          fetch(`${import.meta.env.VITE_BACKEND_URL}/dashboard/get?limit=10&page=0`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          })
+            .then((res) => res.json())
+            .then((jsonRes) => {
+              clipsContext.setClips(jsonRes);
+              loadingContext.setLoading(false);
+            })
+            .catch(() => {
+              loadingContext.setLoading(false);
+            });
           getCurrentWindow()
             .show()
             .then(() => {
               getCurrentWindow().setFocus();
             });
-          console.log("window shown and focused");
+          console.log("data refetched, window shown and focused");
         }
       });
     }
