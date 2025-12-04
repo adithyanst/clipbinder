@@ -1,14 +1,15 @@
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
-import { useEffect, useRef, useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import { onClipboardUpdate, onImageUpdate, onTextUpdate, startListening } from "tauri-plugin-clipboard-api";
 import App from "./App";
-import { LoadingContext } from "./contexts/loadingContext";
 import { ClipsContext } from "./contexts/clipsContext";
+import { LoadingContext } from "./contexts/loadingContext";
 import Dash from "./routes/Dash";
 import Login from "./routes/Login";
 import SignUp from "./routes/SignUp";
+import base64ToBlob from "./utils/base64ToBlob";
 
 function Layout() {
   const main = useRef(null);
@@ -97,8 +98,51 @@ function Layout() {
         console.log(responseData);
       });
 
-      await onImageUpdate((image) => {
-        console.log("Base64 Image:", image);
+      await onImageUpdate(async (base64) => {
+        const blob = base64ToBlob(base64);
+
+        let response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clips/uploadImage`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          },
+        });
+
+        let responseData = await response.json();
+
+        const presignedUrl = responseData.uploadUrl;
+
+        response = await fetch(presignedUrl, {
+          method: "PUT",
+          body: blob,
+          headers: {
+            "Content-Type": "image/png",
+          },
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("S3 upload failed:", response.status, text);
+          return;
+        }
+
+        const imageUrl = presignedUrl.split("?")[0];
+
+        console.log(imageUrl);
+
+        response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clips/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          },
+          body: JSON.stringify({ data: imageUrl, type: "image" }),
+        });
+
+        responseData = await response.json();
+
+        console.log(responseData);
       });
     })();
 
