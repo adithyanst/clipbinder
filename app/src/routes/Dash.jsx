@@ -1,18 +1,19 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useNavigate } from "react-router-dom";
-import LoadingContext from "../contexts/loadingContext";
+import { LoadingContext } from "../contexts/loadingContext";
+import { ClipsContext } from "../contexts/clipsContext";
 import { writeText } from "tauri-plugin-clipboard-api";
 
 function Dash() {
   const navigate = useNavigate();
-  const [clips, setClips] = useState([]);
   const [page, setPage] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const noMoreRef = useRef(false);
 
   const loadingContext = useContext(LoadingContext);
+  const clipsContext = useContext(ClipsContext);
 
   const listRef = useRef(null);
   const itemsRef = useRef([]);
@@ -38,10 +39,10 @@ function Dash() {
       .then((res) => res.json())
       .then((jsonRes) => {
         if (page === 0) {
-          setClips(jsonRes);
+          clipsContext.setClips(jsonRes);
           setSelectedIndex(0);
         } else {
-          setClips((prev) => [...prev, ...jsonRes]);
+          clipsContext.setClips((prev) => [...prev, ...jsonRes]);
         }
         loadingContext.setLoading(false);
       })
@@ -64,10 +65,11 @@ function Dash() {
       .then((res) => res.json())
       .then((jsonRes) => {
         if (page === 0) {
-          setClips(jsonRes);
+          clipsContext.setClips(jsonRes);
+          console.log(clipsContext.clips);
           setSelectedIndex(jsonRes.length > 0 ? 0 : -1);
         } else {
-          setClips((prev) => [...prev, ...jsonRes]);
+          clipsContext.setClips((prev) => [...prev, ...jsonRes]);
         }
         setLoadingMore(false);
       })
@@ -79,11 +81,11 @@ function Dash() {
   // keyboard navigation
   useEffect(() => {
     function onKey(e) {
-      if (clips.length === 0) return;
+      if (clipsContext.clips.length === 0) return;
       if (e.metaKey && e.key === "j") {
         setSelectedIndex((prev) => {
-          const next = Math.min(prev + 1, clips.length - 1);
-          if (next === clips.length - 2 && !loadingMore && !noMoreRef.current) {
+          const next = Math.min(prev + 1, clipsContext.clips.length - 1);
+          if (next === clipsContext.clips.length - 2 && !loadingMore && !noMoreRef.current) {
             setLoadingMore(true);
             setPage((p) => p + 1);
           }
@@ -92,7 +94,7 @@ function Dash() {
       } else if (e.metaKey && e.key === "k") {
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.metaKey && e.key === "Enter") {
-        writeText(clips[selectedIndex].data);
+        writeText(clipsContext.clips[selectedIndex].data);
 
         getCurrentWindow().hide();
         console.log("window hidden");
@@ -100,7 +102,7 @@ function Dash() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [clips, loadingMore, selectedIndex]);
+  }, [clipsContext.clips, loadingMore, selectedIndex]);
 
   // scroll left sidebar so selected item is visible
   useEffect(() => {
@@ -127,7 +129,7 @@ function Dash() {
           ref={listRef}
           className="flex h-full w-[30%] flex-col overflow-y-auto border-[#515151] border-r-[1.5px] border-solid"
         >
-          {clips.map((x, i) => (
+          {clipsContext.clips.map((x, i) => (
             <button
               key={x.id}
               ref={(el) => {
@@ -142,10 +144,10 @@ function Dash() {
           ))}
         </div>
         <div className="h-full w-[70%] select-none overflow-y-auto p-4" data-tauri-drag-region>
-          {selectedIndex >= 0 && clips[selectedIndex] ? (
+          {selectedIndex >= 0 && clipsContext.clips[selectedIndex] ? (
             <div>
-              <p className="mt-2 whitespace-pre-wrap">{clips[selectedIndex].data}</p>
-              <p className="mt-4 text-sm">id: {clips[selectedIndex].id}</p>
+              <p className="mt-2 whitespace-pre-wrap">{clipsContext.clips[selectedIndex].data}</p>
+              <p className="mt-4 text-sm">id: {clipsContext.clips[selectedIndex].id}</p>
             </div>
           ) : (
             <div>no clip selected</div>
