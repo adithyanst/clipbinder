@@ -6,3 +6,9 @@ export async function getClips(limit = PAGINATION.LIMIT, page = PAGINATION.INITI
     method: "GET",
   });
 }
+
+export async function searchClips(query) {
+  return apiCall(`${API_ENDPOINTS.DASHBOARD.SEARCH}?query=${encodeURIComponent(query)}`, {
+    method: "GET",
+  });
+}

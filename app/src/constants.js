@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   },
   DASHBOARD: {
     GET: "/dashboard/get",
+    SEARCH: "/dashboard/search",
   },
 };
 
