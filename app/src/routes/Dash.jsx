@@ -8,6 +8,9 @@ import { logout } from "../services/auth.service.js";
 import { togglePin, deleteClipFromBackend } from "../services/clips.service.js";
 import { PAGINATION, SORT_OPTIONS, SORT_ORDER_OPTIONS, FILTER_OPTIONS } from "../constants.js";
 import clipbinderLogo from "../assets/clipbinder.svg";
+import sortIcon from "../assets/sort.svg";
+import orderIcon from "../assets/order.svg";
+import filterIcon from "../assets/filter.svg";
 
 function Dash() {
   const navigate = useNavigate();
@@ -22,6 +25,7 @@ function Dash() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [filterType, setFilterType] = useState("all");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null); // 'sort', 'order', 'filter', or null
   const searchTimeoutRef = useRef(null);
   const logoutTimeoutRef = useRef(null);
 
@@ -214,39 +218,93 @@ function Dash() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1"
           />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="cursor-pointer rounded border border-[#515151] bg-[#1B1B1B] px-2 py-1 text-sm text-white"
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="cursor-pointer rounded border border-[#515151] bg-[#1B1B1B] px-2 py-1 text-sm text-white"
-          >
-            {SORT_ORDER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="cursor-pointer rounded border border-[#515151] bg-[#1B1B1B] px-2 py-1 text-sm text-white"
-          >
-            {FILTER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              onClick={() => setOpenDropdown(openDropdown === "sort" ? null : "sort")}
+              className="cursor-pointer p-1.5 hover:opacity-50"
+              title="Sort by"
+              type="button"
+            >
+              <img src={sortIcon} alt="Sort" className="h-5 w-5" />
+            </button>
+            {openDropdown === "sort" && (
+              <div className="absolute right-0 top-full mt-1 w-32 rounded border border-[#515151] bg-[#1B1B1B] shadow-lg z-10">
+                {SORT_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSortBy(option.value);
+                      setOpenDropdown(null);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-sm ${
+                      sortBy === option.value ? "bg-[#282828]" : ""
+                    } text-white hover:bg-[#282828]`}
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <button
+              onClick={() => setOpenDropdown(openDropdown === "order" ? null : "order")}
+              className="cursor-pointer rounded p-1.5 hover:opacity-50"
+              title="Sort order"
+              type="button"
+            >
+              <img src={orderIcon} alt="Order" className="h-5 w-5" />
+            </button>
+            {openDropdown === "order" && (
+              <div className="absolute right-0 top-full mt-1 w-32 rounded border border-[#515151] bg-[#1B1B1B] shadow-lg z-10">
+                {SORT_ORDER_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSortOrder(option.value);
+                      setOpenDropdown(null);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-sm ${
+                      sortOrder === option.value ? "bg-[#282828]" : ""
+                    } text-white hover:bg-[#282828]`}
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <button
+              onClick={() => setOpenDropdown(openDropdown === "filter" ? null : "filter")}
+              className="cursor-pointer rounded p-1.5 hover:opacity-50"
+              title="Filter type"
+              type="button"
+            >
+              <img src={filterIcon} alt="Filter" className="h-5 w-5" />
+            </button>
+            {openDropdown === "filter" && (
+              <div className="absolute right-0 top-full mt-1 w-40 rounded border border-[#515151] bg-[#1B1B1B] shadow-lg z-10">
+                {FILTER_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setFilterType(option.value);
+                      setOpenDropdown(null);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-sm ${
+                      filterType === option.value ? "bg-[#282828]" : ""
+                    } text-white hover:bg-[#282828]`}
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {showLogoutConfirm ? (
             <button
               onClick={handleLogout}
