@@ -32,3 +32,19 @@ export const PAGINATION = {
 };
 
 export const DELAY_SCROLL_ITEM_HEIGHT = 40;
+
+export const SORT_OPTIONS = [
+  { value: "date", label: "Date" },
+  { value: "words", label: "Length" },
+];
+
+export const SORT_ORDER_OPTIONS = [
+  { value: "desc", label: "Newest" },
+  { value: "asc", label: "Oldest" },
+];
+
+export const FILTER_OPTIONS = [
+  { value: "all", label: "All Types" },
+  { value: "plaintext", label: "Text" },
+  { value: "image", label: "Images" },
+];

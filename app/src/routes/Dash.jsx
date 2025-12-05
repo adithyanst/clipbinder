@@ -5,7 +5,7 @@ import { ClipsContext } from "../contexts/clipsContext";
 import { useKeyboardNavigation, useScrollToSelected } from "../hooks/useKeyboardNavigation";
 import { getClips, searchClips } from "../services/dashboard.service.js";
 import { logout } from "../services/auth.service.js";
-import { PAGINATION } from "../constants.js";
+import { PAGINATION, SORT_OPTIONS, SORT_ORDER_OPTIONS, FILTER_OPTIONS } from "../constants.js";
 
 function Dash() {
   const navigate = useNavigate();
@@ -16,6 +16,9 @@ function Dash() {
   const [searchQuery, setSearchQuery] = useState("");
   const [displayedClips, setDisplayedClips] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [filterType, setFilterType] = useState("all");
   const searchTimeoutRef = useRef(null);
   const noMoreRef = useRef(false);
 
@@ -42,7 +45,7 @@ function Dash() {
 
     (async () => {
       try {
-        const data = await getClips(PAGINATION.LIMIT, 0);
+        const data = await getClips(PAGINATION.LIMIT, 0, sortBy, sortOrder, filterType);
         clipsContext.setClips(data);
         setDisplayedClips(data);
       } catch (err) {
@@ -52,7 +55,7 @@ function Dash() {
         loadingContext.setLoading(false);
       }
     })();
-  }, []);
+  }, [sortBy, sortOrder, filterType]);
 
   // search effect with debouncing
   useEffect(() => {
@@ -71,7 +74,7 @@ function Dash() {
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         setError("");
-        const results = await searchClips(searchQuery);
+        const results = await searchClips(searchQuery, sortBy, sortOrder, filterType);
         setDisplayedClips(results);
         setSelectedIndex(results.length > 0 ? 0 : -1);
         setIsSearching(false);
@@ -87,7 +90,7 @@ function Dash() {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchQuery, clipsContext.clips]);
+  }, [searchQuery, clipsContext.clips, sortBy, sortOrder, filterType]);
 
   useKeyboardNavigation(selectedIndex, setSelectedIndex, clipsContext, loadingMore, setLoadingMore, setPage, displayedClips, setSearchQuery, handleCopyClip);
   useScrollToSelected(selectedIndex, itemsRef, listRef);
@@ -103,15 +106,51 @@ function Dash() {
 
   return (
     <div className="w-200 overflow-hidden">
-      <div className="px-4 py-3">
-        <input
-          ref={searchInputRef}
-          placeholder="search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="px-4 py-3 space-y-2">
+        <div className="flex gap-2 items-center">
+          <input
+            ref={searchInputRef}
+            placeholder="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1"
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-2 py-1 bg-[#1B1B1B] border border-[#515151] rounded text-white text-sm cursor-pointer"
+          >
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="px-2 py-1 bg-[#1B1B1B] border border-[#515151] rounded text-white text-sm cursor-pointer"
+          >
+            {SORT_ORDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="px-2 py-1 bg-[#1B1B1B] border border-[#515151] rounded text-white text-sm cursor-pointer"
+          >
+            {FILTER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         {searchQuery && (
-          <p className="text-xs opacity-50 mt-1">
+          <p className="text-xs opacity-50">
             {isSearching ? "searching..." : `found ${displayedClips.length} clips`}
           </p>
         )}
