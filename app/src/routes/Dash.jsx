@@ -7,6 +7,7 @@ import { getClips, searchClips } from "../services/dashboard.service.js";
 import { logout } from "../services/auth.service.js";
 import { togglePin, deleteClipFromBackend } from "../services/clips.service.js";
 import { PAGINATION, SORT_OPTIONS, SORT_ORDER_OPTIONS, FILTER_OPTIONS } from "../constants.js";
+import clipbinderLogo from "../assets/clipbinder.svg";
 
 function Dash() {
   const navigate = useNavigate();
@@ -20,8 +21,9 @@ function Dash() {
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
   const [filterType, setFilterType] = useState("all");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const searchTimeoutRef = useRef(null);
-  const noMoreRef = useRef(false);
+  const logoutTimeoutRef = useRef(null);
 
   const loadingContext = useContext(LoadingContext);
   const clipsContext = useContext(ClipsContext);
@@ -34,6 +36,10 @@ function Dash() {
     logout();
     navigate("/");
   }
+
+  // <button onClick={handleLogout} className="mt-4 px-4 py-2 text-white" type="button">
+  //   Logout
+  // </button>
 
   function handleCopyClip() {
     setSearchQuery("");
@@ -75,7 +81,7 @@ function Dash() {
 
       // Update the displayed clips with the new pinned status
       const updatedDisplayedClips = displayedClips.map((clip) =>
-        clip.id === clipId ? { ...clip, pinned: updatedClip.pinned } : clip
+        clip.id === clipId ? { ...clip, pinned: updatedClip.pinned } : clip,
       );
 
       // Re-sort to move pinned clips to top
@@ -175,7 +181,17 @@ function Dash() {
     };
   }, [searchQuery, clipsContext.clips, sortBy, sortOrder, filterType]);
 
-  useKeyboardNavigation(selectedIndex, setSelectedIndex, clipsContext, loadingMore, setLoadingMore, setPage, displayedClips, setSearchQuery, handleCopyClip);
+  useKeyboardNavigation(
+    selectedIndex,
+    setSelectedIndex,
+    clipsContext,
+    loadingMore,
+    setLoadingMore,
+    setPage,
+    displayedClips,
+    setSearchQuery,
+    handleCopyClip,
+  );
   useScrollToSelected(selectedIndex, itemsRef, listRef);
 
   if (loadingContext.loading) {
@@ -189,8 +205,8 @@ function Dash() {
 
   return (
     <div className="w-200 overflow-hidden">
-      <div className="px-4 py-3 space-y-2">
-        <div className="flex gap-2 items-center">
+      <div className="space-y-2 px-4 py-3">
+        <div className="flex items-center gap-2">
           <input
             ref={searchInputRef}
             placeholder="search"
@@ -201,7 +217,7 @@ function Dash() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-2 py-1 bg-[#1B1B1B] border border-[#515151] rounded text-white text-sm cursor-pointer"
+            className="cursor-pointer rounded border border-[#515151] bg-[#1B1B1B] px-2 py-1 text-sm text-white"
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -212,7 +228,7 @@ function Dash() {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            className="px-2 py-1 bg-[#1B1B1B] border border-[#515151] rounded text-white text-sm cursor-pointer"
+            className="cursor-pointer rounded border border-[#515151] bg-[#1B1B1B] px-2 py-1 text-sm text-white"
           >
             {SORT_ORDER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -223,7 +239,7 @@ function Dash() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-2 py-1 bg-[#1B1B1B] border border-[#515151] rounded text-white text-sm cursor-pointer"
+            className="cursor-pointer rounded border border-[#515151] bg-[#1B1B1B] px-2 py-1 text-sm text-white"
           >
             {FILTER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -231,14 +247,40 @@ function Dash() {
               </option>
             ))}
           </select>
+          {showLogoutConfirm ? (
+            <button
+              onClick={handleLogout}
+              className="rounded bg-[#282828] px-3 py-1 text-sm text-white hover:bg-[#333333]"
+              type="button"
+            >
+              logout
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setShowLogoutConfirm(true);
+                // Clear any existing timeout
+                if (logoutTimeoutRef.current) {
+                  clearTimeout(logoutTimeoutRef.current);
+                }
+                // Set timeout to revert back to logo after 3 seconds
+                logoutTimeoutRef.current = setTimeout(() => {
+                  setShowLogoutConfirm(false);
+                }, 3000);
+              }}
+              className="cursor-pointer opacity-50 hover:opacity-100"
+              title="Click to logout"
+              type="button"
+            >
+              <img src={clipbinderLogo} alt="Clipbinder" className="pl-2" />
+            </button>
+          )}
         </div>
         {searchQuery && (
-          <p className="text-xs opacity-50">
-            {isSearching ? "searching..." : `found ${displayedClips.length} clips`}
-          </p>
+          <p className="text-xs opacity-50">{isSearching ? "searching..." : `found ${displayedClips.length} clips`}</p>
         )}
       </div>
-      {error && <div className="px-4 py-2 opacity-50 text-sm">{error}</div>}
+      {error && <div className="px-4 py-2 text-sm opacity-50">{error}</div>}
       <div className="flex h-80">
         <div
           ref={listRef}
@@ -258,45 +300,43 @@ function Dash() {
               {x.type === "plaintext" ? <p>{`${x.data.slice(0, 20)}...`}</p> : <img src={x.data} />}
             </button>
           ))}
-          {loadingMore && <div className="p-2 opacity-50 text-sm text-center">loading more...</div>}
+          {loadingMore && <div className="p-2 text-center text-sm opacity-50">loading more...</div>}
           {displayedClips.length === 0 && !loadingMore && (
-            <div className="p-4 opacity-50 text-sm text-center">
-              {searchQuery ? "no clips found" : "no clips"}
-            </div>
+            <div className="p-4 text-center text-sm opacity-50">{searchQuery ? "no clips found" : "no clips"}</div>
           )}
         </div>
         <div className="h-full w-[70%] select-none overflow-y-auto p-4" data-tauri-drag-region>
           {selectedIndex >= 0 && displayedClips[selectedIndex] ? (
             <div>
-              <div className="flex gap-3 mb-4 text-sm">
+              {displayedClips[selectedIndex].type === "image" ? (
+                <img src={displayedClips[selectedIndex].data} alt="Clipped screenshot" />
+              ) : (
+                <p className="whitespace-pre-wrap">{displayedClips[selectedIndex].data}</p>
+              )}
+              <div className="mt-4 flex gap-3 text-sm">
                 <button
                   onClick={handleTogglePin}
-                  className="text-white underline hover:opacity-70 cursor-pointer"
+                  className="cursor-pointer text-sm text-white underline opacity-50 hover:opacity-100"
                   title={displayedClips[selectedIndex].pinned ? "Unpin clip" : "Pin clip"}
+                  type="button"
                 >
                   {displayedClips[selectedIndex].pinned ? "unpin" : "pin"}
                 </button>
                 <button
                   onClick={handleDeleteClip}
-                  className="text-white underline hover:opacity-70 cursor-pointer"
+                  className="cursor-pointer text-sm text-white underline opacity-50 hover:opacity-100"
                   title="Delete clip"
+                  type="button"
                 >
                   delete
                 </button>
               </div>
-              <p className="mt-2 whitespace-pre-wrap">{displayedClips[selectedIndex].data}</p>
-              <p className="mt-4 text-sm">id: {displayedClips[selectedIndex].id}</p>
-              <button onClick={handleLogout} className="mt-4 px-4 py-2 text-white">
-                Logout
-              </button>
+              <p className="mt-4 text-sm opacity-50">id: {displayedClips[selectedIndex].id}</p>
+              <p className="text-sm opacity-50">type: {displayedClips[selectedIndex].type}</p>
+              <p className="text-sm opacity-50">date created: {displayedClips[selectedIndex].createdAt}</p>
             </div>
           ) : (
-            <div>
-              no clip selected
-              <button onClick={handleLogout} className="mt-4 px-4 py-2 text-white">
-                Logout
-              </button>
-            </div>
+            <div>no clip selected</div>
           )}
         </div>
       </div>
