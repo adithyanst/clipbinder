@@ -37,13 +37,14 @@ export async function searchClips({ userId, query, sortBy = "date", sortOrder = 
 function getSortingOrder(sortBy, sortOrder) {
   const order = sortOrder === "asc" ? "asc" : "desc";
 
+  // Always sort pinned clips first
   if (sortBy === "words") {
     // Sort by data length (word count approximation)
-    return { data: order };
+    return [{ pinned: "desc" }, { data: order }];
   }
 
   // Default to date sorting
-  return { createdAt: order };
+  return [{ pinned: "desc" }, { createdAt: order }];
 }
 
 function getFilterConditions(userId, filterType) {

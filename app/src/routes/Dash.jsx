@@ -5,6 +5,7 @@ import { ClipsContext } from "../contexts/clipsContext";
 import { useKeyboardNavigation, useScrollToSelected } from "../hooks/useKeyboardNavigation";
 import { getClips, searchClips } from "../services/dashboard.service.js";
 import { logout } from "../services/auth.service.js";
+import { togglePin, deleteClipFromBackend } from "../services/clips.service.js";
 import { PAGINATION, SORT_OPTIONS, SORT_ORDER_OPTIONS, FILTER_OPTIONS } from "../constants.js";
 
 function Dash() {
@@ -38,10 +39,92 @@ function Dash() {
     setSearchQuery("");
   }
 
+  async function loadMoreClips() {
+    if (loadingMore || isSearching || searchQuery.trim()) return;
+
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const newClips = await getClips(PAGINATION.LIMIT, nextPage, sortBy, sortOrder, filterType);
+      if (newClips.length > 0) {
+        const allClips = [...displayedClips, ...newClips];
+        clipsContext.setClips(allClips);
+        setDisplayedClips(allClips);
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.error("Failed to load more clips:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  function handleScroll(e) {
+    const element = e.target;
+    if (element.scrollHeight - element.scrollTop <= element.clientHeight + 50) {
+      loadMoreClips();
+    }
+  }
+
+  async function handleTogglePin() {
+    if (selectedIndex < 0 || !displayedClips[selectedIndex]) return;
+
+    try {
+      const clipId = displayedClips[selectedIndex].id;
+      const updatedClip = await togglePin(clipId);
+
+      // Update the displayed clips with the new pinned status
+      const updatedDisplayedClips = displayedClips.map((clip) =>
+        clip.id === clipId ? { ...clip, pinned: updatedClip.pinned } : clip
+      );
+
+      // Re-sort to move pinned clips to top
+      const sortedClips = [
+        ...updatedDisplayedClips.filter((clip) => clip.pinned),
+        ...updatedDisplayedClips.filter((clip) => !clip.pinned),
+      ];
+
+      clipsContext.setClips(sortedClips);
+      setDisplayedClips(sortedClips);
+
+      // Keep the selection on the same clip
+      const newIndex = sortedClips.findIndex((clip) => clip.id === clipId);
+      setSelectedIndex(newIndex);
+    } catch (err) {
+      setError(err.message || "Failed to toggle pin");
+      console.error("Pin toggle error:", err);
+    }
+  }
+
+  async function handleDeleteClip() {
+    if (selectedIndex < 0 || !displayedClips[selectedIndex]) return;
+
+    try {
+      const clipId = displayedClips[selectedIndex].id;
+      await deleteClipFromBackend(clipId);
+
+      // Remove from displayed clips
+      const updatedClips = displayedClips.filter((clip) => clip.id !== clipId);
+      clipsContext.setClips(updatedClips);
+      setDisplayedClips(updatedClips);
+
+      // Update selection
+      if (updatedClips.length === 0) {
+        setSelectedIndex(-1);
+      } else if (selectedIndex >= updatedClips.length) {
+        setSelectedIndex(updatedClips.length - 1);
+      }
+    } catch (err) {
+      setError(err.message || "Failed to delete clip");
+      console.error("Delete error:", err);
+    }
+  }
+
   // initial load
   useEffect(() => {
     loadingContext.setLoading(true);
     setError("");
+    setPage(0);
 
     (async () => {
       try {
@@ -160,6 +243,7 @@ function Dash() {
         <div
           ref={listRef}
           className="flex h-full w-[30%] flex-col overflow-y-auto border-[#515151] border-r-[1.5px] border-solid"
+          onScroll={handleScroll}
         >
           {displayedClips.map((x, i) => (
             <button
@@ -184,6 +268,22 @@ function Dash() {
         <div className="h-full w-[70%] select-none overflow-y-auto p-4" data-tauri-drag-region>
           {selectedIndex >= 0 && displayedClips[selectedIndex] ? (
             <div>
+              <div className="flex gap-3 mb-4 text-sm">
+                <button
+                  onClick={handleTogglePin}
+                  className="text-white underline hover:opacity-70 cursor-pointer"
+                  title={displayedClips[selectedIndex].pinned ? "Unpin clip" : "Pin clip"}
+                >
+                  {displayedClips[selectedIndex].pinned ? "unpin" : "pin"}
+                </button>
+                <button
+                  onClick={handleDeleteClip}
+                  className="text-white underline hover:opacity-70 cursor-pointer"
+                  title="Delete clip"
+                >
+                  delete
+                </button>
+              </div>
               <p className="mt-2 whitespace-pre-wrap">{displayedClips[selectedIndex].data}</p>
               <p className="mt-4 text-sm">id: {displayedClips[selectedIndex].id}</p>
               <button onClick={handleLogout} className="mt-4 px-4 py-2 text-white">

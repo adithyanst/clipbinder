@@ -31,3 +31,17 @@ export async function uploadImageToS3(presignedUrl, blob) {
 
   return presignedUrl.split("?")[0];
 }
+
+export async function togglePin(clipId) {
+  return apiCall(API_ENDPOINTS.CLIPS.TOGGLE_PIN, {
+    method: "POST",
+    body: JSON.stringify({ clipId }),
+  });
+}
+
+export async function deleteClipFromBackend(clipId) {
+  return apiCall(API_ENDPOINTS.CLIPS.DELETE, {
+    method: "POST",
+    body: JSON.stringify({ clipId }),
+  });
+}

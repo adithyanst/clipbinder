@@ -8,6 +8,8 @@ export const API_ENDPOINTS = {
   CLIPS: {
     ADD: "/clips/add",
     UPLOAD_IMAGE: "/clips/uploadImage",
+    TOGGLE_PIN: "/clips/togglePin",
+    DELETE: "/clips/delete",
   },
   DASHBOARD: {
     GET: "/dashboard/get",
